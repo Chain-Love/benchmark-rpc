@@ -24,11 +24,6 @@ const Home = ({ benchmarkData, fetchedAt, benchmarkError }) => {
           times greater than 500 ms.
         </p>
 
-        <p>
-          The summary rows at the bottom show the average and median response
-          times for each RPC method across all URLs.
-        </p>
-
         {fetchedAt && (
           <p>
             Last server-side benchmark:{" "}

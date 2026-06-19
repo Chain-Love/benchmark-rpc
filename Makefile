@@ -8,3 +8,6 @@ docker:
 		.
 	docker push $(DOCKER_REPO):$(GIT_SHA)
 	docker push $(DOCKER_REPO):latest
+
+run:
+	docker run --rm -p 3000:3000 $(DOCKER_REPO):latest
