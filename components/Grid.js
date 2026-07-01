@@ -1,3 +1,4 @@
+// components/Grid.js
 import styles from "../styles/Grid.module.css";
 
 const CLIENT_VERSION_METHOD = "web3_clientVersion";
@@ -32,7 +33,12 @@ const Grid = ({ data }) => {
       return response.result;
     }
 
-    return `${response.time.toFixed(2)} ms`;
+    const suffix =
+      response.errorCount > 0
+        ? ` (${response.errorCount}/${response.samples} failed)`
+        : "";
+
+    return `${response.time.toFixed(2)} ms${suffix}`;
   };
 
   const methods = data[0]?.responses.map((response) => response.method) ?? [];
@@ -64,7 +70,7 @@ const Grid = ({ data }) => {
                   <td
                     key={`${rpc.rpcUrl}-${method}`}
                     className={response ? getColorClass(response) : ""}
-                    title={response?.error ? response.errorMessage : ""}
+                    title={response?.errorMessage ?? ""}
                   >
                     {formatCellValue(response)}
                   </td>
