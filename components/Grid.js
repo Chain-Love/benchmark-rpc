@@ -213,6 +213,25 @@ const Grid = ({ data }) => {
         </div>
       </div>
 
+      <div
+        className={`tags are-medium ${styles.legend}`}
+        aria-label="Table legend"
+      >
+        <span className="tag has-background-light has-text-dark">
+          Reference
+        </span>
+        <span className="tag has-background-success has-text-light">
+          ≤25% slower
+        </span>
+        <span className="tag has-background-warning has-text-dark">
+          25–100% slower
+        </span>
+        <span className="tag has-background-danger has-text-light">
+          &gt;100% slower
+        </span>
+        <span className="tag">🏆 Fastest client</span>
+      </div>
+
       <div className={styles.tableContainer}>
         <table
           className={`table is-bordered is-hoverable is-fullwidth ${styles.benchmarkTable}`}
@@ -253,6 +272,30 @@ const Grid = ({ data }) => {
               const fastestClientTime =
                 clientTimes.length > 1 ? Math.min(...clientTimes) : null;
               const detailsId = `request-details-${method}`;
+              const requestGroups = [];
+
+              for (const rpc of data) {
+                const request = getResponse(rpc, method)?.request;
+
+                if (!request) {
+                  continue;
+                }
+
+                const requestJson = JSON.stringify(request);
+                const matchingGroup = requestGroups.find(
+                  (group) => group.requestJson === requestJson
+                );
+
+                if (matchingGroup) {
+                  matchingGroup.clientNames.push(rpc.rpcTitle);
+                } else {
+                  requestGroups.push({
+                    request,
+                    requestJson,
+                    clientNames: [rpc.rpcTitle],
+                  });
+                }
+              }
 
               return (
                 <Fragment key={method}>
@@ -352,47 +395,45 @@ const Grid = ({ data }) => {
                         className={styles.requestDetailsCell}
                       >
                         <div className={styles.requestGrid}>
-                          {data.map((rpc) => {
-                            const response = getResponse(rpc, method);
-                            const requestKey = `${rpc.rpcUrl}-${method}`;
+                          {requestGroups.map((group) => {
+                            const requestKey = `${method}-${group.requestJson}`;
+                            const clientLabel =
+                              group.clientNames.length === data.length
+                                ? "All clients"
+                                : group.clientNames.join(", ");
 
                             return (
                               <section
-                                key={rpc.rpcUrl}
+                                key={group.requestJson}
                                 className={styles.clientRequest}
-                                aria-label={`${rpc.rpcTitle} request`}
+                                aria-label={`${clientLabel} request`}
                               >
-                                {response?.request ? (
-                                  <>
-                                    <div className={styles.clientRequestHeader}>
-                                      <strong>{rpc.rpcTitle}</strong>
-                                      <button
-                                        type="button"
-                                        className="button is-small is-light"
-                                        onClick={() =>
-                                          copyRequest(requestKey, response.request)
-                                        }
-                                      >
-                                        {copiedRequestKey === requestKey
-                                          ? "Copied"
-                                          : copyErrorKey === requestKey
-                                          ? "Copy failed"
-                                          : "Copy JSON"}
-                                      </button>
-                                    </div>
-                                    <pre>
-                                      {JSON.stringify(response.request, null, 2)}
-                                    </pre>
-                                  </>
-                                ) : (
-                                  <>
-                                    <strong>{rpc.rpcTitle}</strong>
-                                    <span>Request unavailable</span>
-                                  </>
-                                )}
+                                <div className={styles.clientRequestHeader}>
+                                  <strong>{clientLabel}</strong>
+                                  <button
+                                    type="button"
+                                    className="button is-small is-light"
+                                    onClick={() =>
+                                      copyRequest(requestKey, group.request)
+                                    }
+                                  >
+                                    {copiedRequestKey === requestKey
+                                      ? "Copied"
+                                      : copyErrorKey === requestKey
+                                      ? "Copy failed"
+                                      : "Copy JSON"}
+                                  </button>
+                                </div>
+                                <pre>
+                                  {JSON.stringify(group.request, null, 2)}
+                                </pre>
                               </section>
                             );
                           })}
+
+                          {requestGroups.length === 0 && (
+                            <span>Request unavailable</span>
+                          )}
                         </div>
                         <span className={styles.visuallyHidden} aria-live="polite">
                           {copiedRequestKey

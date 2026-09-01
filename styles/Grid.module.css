@@ -47,6 +47,10 @@
   margin-bottom: 0;
 }
 
+.legend {
+  margin-bottom: 0.75rem !important;
+}
+
 .stripedRow {
   background: var(--bulma-table-striped-row-even-background-color);
 }
@@ -125,7 +129,7 @@
 .requestGrid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 }
 
 .clientRequest {

@@ -42,27 +42,30 @@ const Home = ({
       <h1 className="title is-1">RPC Benchmark</h1>
 
       <div className="content">
-        <p>
-          We send the same types of Ethereum JSON-RPC requests to Forest, Lotus,
-          and an Ethereum node used as a reference every{" "}
-          <strong>{formatDuration(intervalMs)}</strong>.
-        </p>
-
-        <div className="tags are-medium" aria-label="Table legend">
-          <span className="tag has-background-light has-text-dark">
-            Reference
-          </span>
-          <span className="tag has-background-success has-text-light">
-            ≤25% slower
-          </span>
-          <span className="tag has-background-warning has-text-dark">
-            25–100% slower
-          </span>
-          <span className="tag has-background-danger has-text-light">
-            &gt;100% slower
-          </span>
-          <span className="tag">🏆 Fastest client</span>
-        </div>
+        <section
+          className={styles.methodology}
+          aria-labelledby="methodology-title"
+        >
+          <p id="methodology-title">
+            <strong>How this benchmark works</strong>
+          </p>
+          <ul>
+            <li>
+              Every <strong>{formatDuration(intervalMs)}</strong>, we send the
+              same types of Ethereum JSON-RPC requests to Forest, Lotus, and an
+              Ethereum node used as a reference.
+            </li>
+            <li>We test one client and one request at a time.</li>
+            <li>
+              Each client uses its own latest block and transaction, so the
+              exact data may differ.
+            </li>
+            <li>
+              The table shows the average response time for the period displayed
+              above it.
+            </li>
+          </ul>
+        </section>
 
         {fetchedAt && (
           <p>
@@ -76,34 +79,6 @@ const Home = ({
             Last benchmark error: {benchmarkError}
           </p>
         )}
-
-        <details className={styles.methodology}>
-          <summary>How this benchmark works</summary>
-          <div className={styles.methodologyContent}>
-            <p>
-              We regularly send the same types of requests to each client and
-              measure how long the answers take.
-            </p>
-            <ul>
-              <li>
-                We test one client at a time and send one request at a time.
-              </li>
-              <li>
-                Each client uses its own latest block and transaction. The
-                request types match, but the exact data may differ.
-              </li>
-              <li>
-                The table shows the average response time for the period named
-                above it.
-              </li>
-              <li>
-                Colors compare Forest and Lotus with Ethereum. Green means up
-                to 25% slower, yellow means 25–100% slower, and red means more
-                than 100% slower.
-              </li>
-            </ul>
-          </div>
-        </details>
 
         <p>
           Source code available on{" "}
