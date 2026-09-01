@@ -37,61 +37,29 @@ const Home = ({
   collectionWindowMs,
   estimatedReadyAt,
 }) => {
+  let resultsSubtitle =
+    sampleCount === 1
+      ? "Based on the latest sample"
+      : `Average of ${sampleCount} samples collected over ${formatDuration(
+          collectionWindowMs
+        )}`;
+
+  if (fetchedAt) {
+    resultsSubtitle += ` · Last updated ${new Date(fetchedAt).toLocaleString()}`;
+  }
+
   return (
     <div className={styles.container}>
       <h1 className="title is-1">RPC Benchmark</h1>
+      <p className={styles.intro}>
+        Compare Forest and Lotus response times with an Ethereum reference node.
+      </p>
 
-      <div className="content">
-        <section
-          className={styles.methodology}
-          aria-labelledby="methodology-title"
-        >
-          <p id="methodology-title">
-            <strong>How this benchmark works</strong>
-          </p>
-          <ul>
-            <li>
-              Every <strong>{formatDuration(intervalMs)}</strong>, we send the
-              same types of Ethereum JSON-RPC requests to Forest, Lotus, and an
-              Ethereum node used as a reference.
-            </li>
-            <li>We test one client and one request at a time.</li>
-            <li>
-              Each client uses its own latest block and transaction, so the
-              exact data may differ.
-            </li>
-            <li>
-              The table shows the average response time for the period displayed
-              above it.
-            </li>
-          </ul>
-        </section>
-
-        {fetchedAt && (
-          <p>
-            Last probe:{" "}
-            <strong>{new Date(fetchedAt).toLocaleString()}</strong>
-          </p>
-        )}
-
-        {benchmarkError && (
-          <p className="has-text-danger">
-            Last benchmark error: {benchmarkError}
-          </p>
-        )}
-
-        <p>
-          Source code available on{" "}
-          <a
-            href="https://github.com/snissn/benchmark-rpc"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
-          .
+      {benchmarkError && (
+        <p className="has-text-danger">
+          Last benchmark error: {benchmarkError}
         </p>
-      </div>
+      )}
 
       {!benchmarkReady ? (
         <div className="notification is-info is-light">
@@ -108,17 +76,49 @@ const Home = ({
         </div>
       ) : (
         <BenchmarkSection
-          title="Filecoin ETH RPC Benchmark"
-          subtitle={
-            sampleCount === 1
-              ? "Based on the latest sample"
-              : `Average of ${sampleCount} samples collected over ${formatDuration(
-                  collectionWindowMs
-                )}`
-          }
+          title="Results"
+          subtitle={resultsSubtitle}
           benchmarkData={benchmarkData}
         />
       )}
+
+      <div className="content">
+        <section
+          className={styles.methodology}
+          aria-labelledby="methodology-title"
+        >
+          <h2 id="methodology-title" className="title is-3">
+            How this benchmark works
+          </h2>
+          <ul>
+            <li>
+              Every <strong>{formatDuration(intervalMs)}</strong>, we send the
+              same types of Ethereum JSON-RPC requests to Forest, Lotus, and an
+              Ethereum node used as a reference.
+            </li>
+            <li>We test one client and one request at a time.</li>
+            <li>
+              Each client uses its own latest block and transaction, so the
+              exact data may differ.
+            </li>
+            <li>
+              The table shows the average response time for the period displayed
+              above it.
+            </li>
+            <li>
+              You can review the benchmark&apos;s source code on{" "}
+              <a
+                href="https://github.com/snissn/benchmark-rpc"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+              .
+            </li>
+          </ul>
+        </section>
+      </div>
     </div>
   );
 };

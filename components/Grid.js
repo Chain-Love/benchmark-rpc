@@ -4,6 +4,9 @@ import styles from "../styles/Grid.module.css";
 const CLIENT_VERSION_METHOD = "web3_clientVersion";
 const REFERENCE_TITLE = "Ethereum";
 
+const getResponse = (rpc, method) =>
+  rpc?.responses.find((response) => response.method === method);
+
 const Grid = ({ data }) => {
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [copiedRequestKey, setCopiedRequestKey] = useState(null);
@@ -21,9 +24,6 @@ const Grid = ({ data }) => {
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
-
-  const getResponse = (rpc, method) =>
-    rpc?.responses.find((response) => response.method === method);
 
   const getReferenceResponse = (method) =>
     getResponse(
@@ -140,44 +140,71 @@ const Grid = ({ data }) => {
     return true;
   });
 
+  const filecoinClients = data.filter(
+    (rpc) => rpc.rpcTitle !== REFERENCE_TITLE
+  );
+  const clientWinCounts = new Map(
+    filecoinClients.map((rpc) => [rpc.rpcTitle, 0])
+  );
+  let tiedOrUnavailableCount = 0;
+
+  for (const method of allMethods) {
+    const successfulClients = filecoinClients
+      .map((rpc) => ({
+        title: rpc.rpcTitle,
+        response: getResponse(rpc, method),
+      }))
+      .filter(({ response }) => response && !response.error);
+
+    if (successfulClients.length !== filecoinClients.length) {
+      tiedOrUnavailableCount += 1;
+      continue;
+    }
+
+    const fastestTime = Math.min(
+      ...successfulClients.map(({ response }) => response.time)
+    );
+    const fastestClients = successfulClients.filter(
+      ({ response }) => response.time === fastestTime
+    );
+
+    if (fastestClients.length !== 1) {
+      tiedOrUnavailableCount += 1;
+      continue;
+    }
+
+    const fastestTitle = fastestClients[0].title;
+    clientWinCounts.set(fastestTitle, clientWinCounts.get(fastestTitle) + 1);
+  }
+
+  const percentageOfMethods = (count) =>
+    allMethods.length ? Math.round((count / allMethods.length) * 100) : 0;
+  const regressionPercentage = percentageOfMethods(
+    allMethods.filter(hasRegression).length
+  );
+
   return (
     <>
-      <section className={styles.environment} aria-labelledby="environment-title">
-        <h3 id="environment-title" className="title is-5">
-          Test environment
-        </h3>
-        <div
-          className={`${styles.tableContainer} ${styles.environmentTableContainer}`}
-        >
-          <table className={`table is-bordered is-narrow ${styles.environmentTable}`}>
-            <caption className={styles.visuallyHidden}>
-              Client versions used by the benchmark
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Endpoint</th>
-                <th scope="col">Client version</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((rpc) => {
-                const versionResponse = getResponse(rpc, CLIENT_VERSION_METHOD);
-
-                return (
-                  <tr key={rpc.rpcUrl}>
-                    <th scope="row">{rpc.rpcTitle}</th>
-                    <td>
-                      {versionResponse?.error
-                        ? "Unavailable"
-                        : versionResponse?.result ?? "N/A"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      {allMethods.length > 0 && (
+        <p className={styles.summary}>
+          <strong>Across all methods:</strong>{" "}
+          {filecoinClients.map((rpc) => (
+            <span key={rpc.rpcUrl}>
+              {rpc.rpcTitle} fastest: {percentageOfMethods(
+                clientWinCounts.get(rpc.rpcTitle)
+              )}%
+            </span>
+          ))}
+          {tiedOrUnavailableCount > 0 && (
+            <span>
+              Tied or unavailable: {percentageOfMethods(tiedOrUnavailableCount)}%
+            </span>
+          )}
+          <span>
+            Methods &gt;25% slower than Ethereum: {regressionPercentage}%
+          </span>
+        </p>
+      )}
 
       <div className={styles.controls}>
         <div className="field">
@@ -198,7 +225,7 @@ const Grid = ({ data }) => {
 
         <div className="field">
           <label className="label" htmlFor="method-filter">
-            Show
+            Filter methods
           </label>
           <div className="control select is-fullwidth">
             <select
@@ -207,7 +234,7 @@ const Grid = ({ data }) => {
               onChange={(event) => setTableFilter(event.target.value)}
             >
               <option value="all">All methods</option>
-              <option value="regressions">Methods over 25% slower</option>
+              <option value="regressions">Over 25% slower vs Ethereum</option>
             </select>
           </div>
         </div>
@@ -218,7 +245,7 @@ const Grid = ({ data }) => {
         aria-label="Table legend"
       >
         <span className="tag has-background-light has-text-dark">
-          Reference
+          Reference value
         </span>
         <span className="tag has-background-success has-text-light">
           ≤25% slower
@@ -229,7 +256,7 @@ const Grid = ({ data }) => {
         <span className="tag has-background-danger has-text-light">
           &gt;100% slower
         </span>
-        <span className="tag">🏆 Fastest client</span>
+        <span className="tag">🏆 Faster Filecoin client</span>
       </div>
 
       <div className={styles.tableContainer}>
@@ -264,13 +291,36 @@ const Grid = ({ data }) => {
           <tbody>
             {methods.map((method, methodIndex) => {
               const referenceResponse = getReferenceResponse(method);
-              const clientTimes = data
+              const filecoinResults = data
                 .filter((rpc) => rpc.rpcTitle !== REFERENCE_TITLE)
-                .map((rpc) => getResponse(rpc, method))
-                .filter((response) => response && !response.error)
-                .map((response) => response.time);
+                .map((rpc) => ({
+                  title: rpc.rpcTitle,
+                  response: getResponse(rpc, method),
+                }))
+                .filter(({ response }) => response && !response.error);
               const fastestClientTime =
-                clientTimes.length > 1 ? Math.min(...clientTimes) : null;
+                filecoinResults.length > 1
+                  ? Math.min(
+                      ...filecoinResults.map(({ response }) => response.time)
+                    )
+                  : null;
+              let clientComparison = null;
+
+              if (filecoinResults.length === 2) {
+                const [fasterClient, slowerClient] = [...filecoinResults].sort(
+                  (first, second) => first.response.time - second.response.time
+                );
+
+                clientComparison =
+                  fasterClient.response.time === slowerClient.response.time
+                    ? `${fasterClient.title} and ${slowerClient.title} tied`
+                    : `${fasterClient.title} ${formatComparison(
+                        fasterClient.response,
+                        slowerClient.response,
+                        slowerClient.title
+                      )}`;
+              }
+
               const detailsId = `request-details-${method}`;
               const requestGroups = [];
 
@@ -308,9 +358,21 @@ const Grid = ({ data }) => {
                         aria-controls={detailsId}
                         onClick={() => toggleRequest(method)}
                       >
-                        <span>{method}</span>
-                        <span aria-hidden="true">
-                          {selectedMethod === method ? "▾" : "▸"}
+                        <span>
+                          <span className={styles.methodName}>{method}</span>
+                          {clientComparison && (
+                            <span className={styles.rowComparison}>
+                              {clientComparison}
+                            </span>
+                          )}
+                        </span>
+                        <span className={styles.requestToggleLabel}>
+                          {selectedMethod === method
+                            ? "Hide request"
+                            : "View request"}{" "}
+                          <span aria-hidden="true">
+                            {selectedMethod === method ? "▾" : "▸"}
+                          </span>
                         </span>
                       </button>
                     </th>
@@ -325,20 +387,6 @@ const Grid = ({ data }) => {
                             referenceResponse,
                             REFERENCE_TITLE
                           );
-                      const otherClient = isReference
-                        ? null
-                        : data.find(
-                            (candidate) =>
-                              candidate.rpcTitle !== REFERENCE_TITLE &&
-                              candidate.rpcUrl !== rpc.rpcUrl
-                          );
-                      const clientDifference = otherClient
-                        ? formatComparison(
-                            response,
-                            getResponse(otherClient, method),
-                            otherClient.rpcTitle
-                          )
-                        : null;
                       const isFastestClient =
                         !isReference &&
                         response &&
@@ -378,11 +426,6 @@ const Grid = ({ data }) => {
                               {referenceDifference}
                             </span>
                           )}
-                          {clientDifference && (
-                            <span className={styles.secondaryMetric}>
-                              {clientDifference}
-                            </span>
-                          )}
                         </td>
                       );
                     })}
@@ -408,11 +451,11 @@ const Grid = ({ data }) => {
                                 className={styles.clientRequest}
                                 aria-label={`${clientLabel} request`}
                               >
-                                <div className={styles.clientRequestHeader}>
-                                  <strong>{clientLabel}</strong>
+                                <strong>{clientLabel}</strong>
+                                <div className={styles.requestCode}>
                                   <button
                                     type="button"
-                                    className="button is-small is-light"
+                                    className={`button is-small is-light ${styles.copyButton}`}
                                     onClick={() =>
                                       copyRequest(requestKey, group.request)
                                     }
@@ -423,10 +466,10 @@ const Grid = ({ data }) => {
                                       ? "Copy failed"
                                       : "Copy JSON"}
                                   </button>
+                                  <pre>
+                                    {JSON.stringify(group.request, null, 2)}
+                                  </pre>
                                 </div>
-                                <pre>
-                                  {JSON.stringify(group.request, null, 2)}
-                                </pre>
                               </section>
                             );
                           })}
@@ -462,5 +505,46 @@ const Grid = ({ data }) => {
     </>
   );
 };
+
+export const TestEnvironment = ({ data }) => (
+  <section className={styles.environment} aria-labelledby="environment-title">
+    <h2 id="environment-title" className="title is-3">
+      Test environment
+    </h2>
+    <div
+      className={`${styles.tableContainer} ${styles.environmentTableContainer}`}
+    >
+      <table
+        className={`table is-bordered is-narrow ${styles.environmentTable}`}
+      >
+        <caption className={styles.visuallyHidden}>
+          Client versions used by the benchmark
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Client</th>
+            <th scope="col">Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((rpc) => {
+            const versionResponse = getResponse(rpc, CLIENT_VERSION_METHOD);
+
+            return (
+              <tr key={rpc.rpcUrl}>
+                <th scope="row">{rpc.rpcTitle}</th>
+                <td>
+                  {versionResponse?.error
+                    ? "Unavailable"
+                    : versionResponse?.result ?? "N/A"}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </section>
+);
 
 export default Grid;

@@ -7,6 +7,11 @@
   text-align: center;
 }
 
+.intro {
+  font-size: 1.25rem;
+  margin: -1.5rem 0 2rem;
+}
+
 .section {
   margin-bottom: 4rem;
 }
@@ -21,8 +26,8 @@
   max-width: 75rem;
 }
 
-.methodology p {
-  margin-bottom: 0.5rem !important;
+.methodology h2 {
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 768px) {
