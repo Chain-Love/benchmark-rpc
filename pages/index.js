@@ -50,7 +50,7 @@ const Home = ({
 
   return (
     <div className={styles.container}>
-      <h1 className="title is-1">RPC Benchmark</h1>
+      <h1 className={`${styles.hero} title is-1`}>RPC Benchmark</h1>
       <p className={styles.intro}>
         Compare Forest and Lotus response times with an Ethereum reference node.
       </p>
@@ -82,7 +82,7 @@ const Home = ({
         />
       )}
 
-      <div className="content">
+      <div className={`content ${styles.content}`}>
         <section
           className={styles.methodology}
           aria-labelledby="methodology-title"
@@ -108,7 +108,7 @@ const Home = ({
             <li>
               You can review the benchmark&apos;s source code on{" "}
               <a
-                href="https://github.com/snissn/benchmark-rpc"
+                href="https://github.com/Chain-Love/benchmark-rpc"
                 target="_blank"
                 rel="noopener noreferrer"
               >

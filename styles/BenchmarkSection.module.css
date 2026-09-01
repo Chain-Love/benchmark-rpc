@@ -1,14 +1,17 @@
 .section {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
 .title {
-  margin-bottom: 2rem;
+  font-size: 1.25rem !important;
+  margin-bottom: 0.375rem !important;
   text-align: left;
 }
 
 .subtitle {
-  margin: -1rem 0 2rem;
+  color: var(--rpc-text-secondary);
+  font-size: 0.8125rem;
+  margin: 0 0 1.5rem;
   text-align: left;
 }
 

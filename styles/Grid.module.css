@@ -1,29 +1,56 @@
 .environment {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
 .environment h2 {
-  margin-bottom: 0.75rem;
+  font-size: 1.25rem !important;
+  margin-bottom: 1rem !important;
 }
 
 .environmentTableContainer {
-  max-width: 50rem;
+  max-width: 100%;
+  width: fit-content;
 }
 
 .environmentTable {
+  background: var(--rpc-panel) !important;
+  color: var(--rpc-text) !important;
   width: auto;
 }
 
+.environmentTable :global(th),
+.environmentTable :global(td) {
+  border-color: var(--rpc-border) !important;
+  color: inherit !important;
+  padding: 0.65rem 0.875rem !important;
+}
+
+.environmentTable :global(thead th) {
+  background: var(--rpc-panel-raised) !important;
+  color: var(--rpc-text-muted) !important;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .tableContainer {
+  border-radius: 0.625rem;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
 }
 
 .summary {
-  background: var(--bulma-scheme-main-ter);
-  border-radius: 0.375rem;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
+  background: var(--rpc-panel);
+  border: 1px solid var(--rpc-border);
+  border-radius: 0.625rem;
+  color: var(--rpc-text-secondary);
+  font-size: 0.8125rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.summary strong {
+  color: var(--rpc-text);
 }
 
 .summary span {
@@ -36,11 +63,26 @@
 }
 
 .benchmarkTable {
+  background: var(--rpc-panel) !important;
+  color: var(--rpc-text) !important;
+  margin-bottom: 0 !important;
   min-width: 760px;
 }
 
+.benchmarkTable :global(th),
+.benchmarkTable :global(td) {
+  border-color: var(--rpc-border-soft) !important;
+  color: inherit;
+}
+
 .benchmarkTable thead th {
+  background: var(--rpc-panel-raised) !important;
+  color: var(--rpc-text-muted) !important;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   position: sticky;
+  text-transform: uppercase;
   top: 0;
   z-index: 2;
 }
@@ -51,7 +93,7 @@
 }
 
 .controls {
-  align-items: end;
+  align-items: start;
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(16rem, 2fr) minmax(14rem, 1fr);
@@ -63,16 +105,92 @@
   margin-bottom: 0;
 }
 
+.controls :global(.label) {
+  color: var(--rpc-text-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.controls :global(.input),
+.controls :global(.select select) {
+  background: var(--rpc-input);
+  border-color: var(--rpc-border);
+  border-radius: 0.5rem;
+  color: var(--rpc-text);
+  font-size: 0.8125rem;
+  height: 2.5rem;
+}
+
+.controls :global(.select) {
+  height: 2.5rem;
+}
+
+.controls :global(.input::placeholder) {
+  color: var(--rpc-text-muted);
+}
+
+.controls :global(.input:focus),
+.controls :global(.select select:focus) {
+  border-color: var(--rpc-orange);
+  box-shadow: 0 0 0 1px var(--rpc-orange);
+}
+
+.controls :global(.select:not(.is-multiple):not(.is-loading)::after) {
+  border-color: var(--rpc-text-muted);
+}
+
 .legend {
+  gap: 0.375rem;
   margin-bottom: 0.75rem !important;
 }
 
+.legend :global(.tag) {
+  background: transparent;
+  border: 1px solid var(--rpc-border);
+  border-radius: 999px;
+  color: var(--rpc-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  height: auto;
+  padding: 0.3rem 0.65rem;
+}
+
+.fastLegend {
+  background: var(--rpc-green-bg) !important;
+  border-color: #1c4a30 !important;
+  color: var(--rpc-green) !important;
+}
+
+.warningLegend {
+  background: var(--rpc-warning-bg) !important;
+  border-color: #65491e !important;
+  color: var(--rpc-orange) !important;
+}
+
+.slowLegend {
+  background: var(--rpc-red-bg) !important;
+  border-color: #662b28 !important;
+  color: var(--rpc-red) !important;
+}
+
+.referenceLegend,
+.trophyLegend {
+  background: var(--rpc-panel-raised) !important;
+}
+
+.referenceLegend {
+  border-color: var(--rpc-border-soft) !important;
+  color: var(--rpc-text) !important;
+}
+
 .stripedRow {
-  background: var(--bulma-table-striped-row-even-background-color);
+  background: #18181d;
 }
 
 .methodCell {
-  background: var(--bulma-scheme-main);
+  background: var(--rpc-panel) !important;
   min-width: 19rem;
   padding: 0 !important;
   position: sticky;
@@ -81,7 +199,7 @@
 }
 
 .stripedRow .methodCell {
-  background: var(--bulma-table-striped-row-even-background-color);
+  background: #18181d !important;
 }
 
 .methodButton {
@@ -95,8 +213,8 @@
   font-weight: 600;
   gap: 0.75rem;
   justify-content: space-between;
-  min-height: 3.5rem;
-  padding: 0.75rem;
+  min-height: 3.75rem;
+  padding: 0.875rem;
   text-align: left;
   width: 100%;
 }
@@ -106,6 +224,11 @@
   display: block;
 }
 
+.methodName {
+  font-family: var(--rpc-mono);
+  font-size: 0.8125rem;
+}
+
 .rowComparison,
 .requestToggleLabel {
   font-size: 0.75rem;
@@ -113,6 +236,7 @@
 }
 
 .rowComparison {
+  color: var(--rpc-text-secondary);
   margin-top: 0.2rem;
   opacity: 0.8;
 }
@@ -124,10 +248,11 @@
   gap: 0.2rem;
   padding-top: 0.1rem;
   white-space: nowrap;
+  color: var(--rpc-orange);
 }
 
 .methodButton:focus-visible {
-  box-shadow: inset 0 0 0 3px #485fc7;
+  box-shadow: inset 0 0 0 2px var(--rpc-orange);
   outline: none;
 }
 
@@ -139,8 +264,16 @@
 
 .primaryMetric,
 .secondaryMetric,
+.columnTitle,
 .columnNote {
   display: block;
+}
+
+.columnTitle {
+  color: var(--rpc-text-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .primaryMetric {
@@ -152,18 +285,41 @@
 .columnNote {
   font-size: 0.75rem;
   margin-top: 0.15rem;
-  opacity: 0.85;
+  opacity: 0.8;
+}
+
+.columnNote {
+  color: var(--rpc-orange);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  opacity: 1;
+  text-transform: uppercase;
 }
 
 .referenceCell,
 .referenceHeader {
-  background: var(--bulma-background) !important;
-  color: var(--bulma-text) !important;
+  background: var(--rpc-panel-raised) !important;
+  color: var(--rpc-text) !important;
+}
+
+.fastCell {
+  background: var(--rpc-green-bg) !important;
+  color: var(--rpc-green) !important;
+}
+
+.warningCell {
+  background: var(--rpc-warning-bg) !important;
+  color: var(--rpc-orange) !important;
+}
+
+.slowCell {
+  background: var(--rpc-red-bg) !important;
+  color: var(--rpc-red) !important;
 }
 
 .requestDetailsCell {
-  background: var(--bulma-scheme-main-ter) !important;
-  color: var(--bulma-text);
+  background: var(--rpc-bg) !important;
+  color: var(--rpc-text);
   padding: 1rem !important;
 }
 
@@ -177,9 +333,9 @@
 }
 
 .clientRequest {
-  background: var(--bulma-scheme-main);
-  border: 1px solid var(--bulma-border);
-  border-radius: 0.375rem;
+  background: var(--rpc-panel);
+  border: 1px solid var(--rpc-border);
+  border-radius: 0.625rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -193,21 +349,35 @@
 }
 
 .copyButton {
+  background: transparent !important;
+  border-color: var(--rpc-border) !important;
+  color: var(--rpc-text-secondary) !important;
   position: absolute;
   right: 0.5rem;
   top: 0.5rem;
   z-index: 1;
 }
 
+.copyButton:hover {
+  border-color: var(--rpc-orange) !important;
+  color: var(--rpc-orange) !important;
+}
+
 .clientRequest pre {
+  background: var(--rpc-input);
+  border: 1px solid var(--rpc-border-soft);
+  border-radius: 0.5rem;
+  color: #d9d9de;
+  font-family: var(--rpc-mono);
   font-size: 0.75rem;
   margin: 0;
   overflow-wrap: anywhere;
-  padding-top: 3rem;
+  padding: 1rem 6.5rem 1rem 1rem;
   white-space: pre-wrap;
 }
 
 .emptyState {
+  color: var(--rpc-text-secondary) !important;
   padding: 2rem !important;
   text-align: center !important;
 }

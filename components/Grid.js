@@ -65,14 +65,14 @@ const Grid = ({ data }) => {
     }
 
     if (response.time > referenceResponse.time * 2) {
-      return "has-background-danger has-text-light";
+      return styles.slowCell;
     }
 
     if (response.time > referenceResponse.time * 1.25) {
-      return "has-background-warning has-text-dark";
+      return styles.warningCell;
     }
 
-    return "has-background-success has-text-light";
+    return styles.fastCell;
   };
 
   const formatComparison = (response, comparisonResponse, comparisonTitle) => {
@@ -227,15 +227,17 @@ const Grid = ({ data }) => {
           <label className="label" htmlFor="method-filter">
             Filter methods
           </label>
-          <div className="control select is-fullwidth">
-            <select
-              id="method-filter"
-              value={tableFilter}
-              onChange={(event) => setTableFilter(event.target.value)}
-            >
-              <option value="all">All methods</option>
-              <option value="regressions">Over 25% slower vs Ethereum</option>
-            </select>
+          <div className="control">
+            <div className="select is-fullwidth">
+              <select
+                id="method-filter"
+                value={tableFilter}
+                onChange={(event) => setTableFilter(event.target.value)}
+              >
+                <option value="all">All methods</option>
+                <option value="regressions">Over 25% slower vs Ethereum</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -244,19 +246,21 @@ const Grid = ({ data }) => {
         className={`tags are-medium ${styles.legend}`}
         aria-label="Table legend"
       >
-        <span className="tag has-background-light has-text-dark">
+        <span className={`tag ${styles.referenceLegend}`}>
           Reference value
         </span>
-        <span className="tag has-background-success has-text-light">
+        <span className={`tag ${styles.fastLegend}`}>
           ≤25% slower
         </span>
-        <span className="tag has-background-warning has-text-dark">
+        <span className={`tag ${styles.warningLegend}`}>
           25–100% slower
         </span>
-        <span className="tag has-background-danger has-text-light">
+        <span className={`tag ${styles.slowLegend}`}>
           &gt;100% slower
         </span>
-        <span className="tag">🏆 Faster Filecoin client</span>
+        <span className={`tag ${styles.trophyLegend}`}>
+          🏆 Faster Filecoin client
+        </span>
       </div>
 
       <div className={styles.tableContainer}>
@@ -268,7 +272,9 @@ const Grid = ({ data }) => {
           </caption>
           <thead>
             <tr>
-              <th scope="col">Method</th>
+              <th scope="col">
+                <span className={styles.columnTitle}>Method</span>
+              </th>
               {data.map((rpc) => (
                 <th
                   key={rpc.rpcUrl}
@@ -279,9 +285,9 @@ const Grid = ({ data }) => {
                       : undefined
                   }
                 >
-                  {rpc.rpcTitle}
+                  <span className={styles.columnTitle}>{rpc.rpcTitle}</span>
                   {rpc.rpcTitle === REFERENCE_TITLE && (
-                    <span className={styles.columnNote}>Reference</span>
+                    <span className={styles.columnNote}>Reference value</span>
                   )}
                 </th>
               ))}
@@ -522,8 +528,12 @@ export const TestEnvironment = ({ data }) => (
         </caption>
         <thead>
           <tr>
-            <th scope="col">Client</th>
-            <th scope="col">Version</th>
+            <th scope="col">
+              <span className={styles.columnTitle}>Client</span>
+            </th>
+            <th scope="col">
+              <span className={styles.columnTitle}>Version</span>
+            </th>
           </tr>
         </thead>
         <tbody>

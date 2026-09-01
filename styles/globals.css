@@ -1,0 +1,56 @@
+:root {
+  color-scheme: dark;
+  --rpc-bg: #09090a;
+  --rpc-panel: #151519;
+  --rpc-panel-raised: #1c1c21;
+  --rpc-input: #0d0d10;
+  --rpc-border: #2f2f36;
+  --rpc-border-soft: #232329;
+  --rpc-text: #f2f2f0;
+  --rpc-text-secondary: #a8a8ae;
+  --rpc-text-muted: #6f6f78;
+  --rpc-orange: #f2994a;
+  --rpc-green: #4ade80;
+  --rpc-green-bg: #123321;
+  --rpc-warning-bg: #3a2a12;
+  --rpc-red: #ff746c;
+  --rpc-red-bg: #3a1717;
+  --rpc-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+html,
+body {
+  background: var(--rpc-bg);
+  color: var(--rpc-text);
+  min-height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--rpc-orange);
+}
+
+a:hover {
+  color: #ffad67;
+}
+
+.title,
+.content h2,
+.content strong {
+  color: var(--rpc-text);
+}
+
+.notification.is-info.is-light {
+  background: var(--rpc-panel);
+  border: 1px solid var(--rpc-border);
+  color: var(--rpc-text-secondary);
+}
+
+.has-text-danger {
+  color: var(--rpc-red) !important;
+}
