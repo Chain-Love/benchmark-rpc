@@ -3,7 +3,6 @@
 import BenchmarkSection from "../components/BenchmarkSection";
 import styles from "../styles/Home.module.css";
 import { getBenchmarkSnapshot } from "../lib/benchmarkCache";
-import { rpcMethods } from "../lib/rpcBenchmark";
 
 const formatDuration = (ms) => {
   const totalSeconds = Math.round(ms / 1000);
@@ -35,7 +34,7 @@ const Home = ({
   minSamples,
   benchmarkReady,
   intervalMs,
-  collectionDurationMs,
+  collectionWindowMs,
   estimatedReadyAt,
 }) => {
   return (
@@ -51,18 +50,18 @@ const Home = ({
 
         <div className="tags are-medium" aria-label="Table legend">
           <span className="tag has-background-light has-text-dark">
-            Reference value
+            Reference
           </span>
           <span className="tag has-background-success has-text-light">
-            No more than 25% slower
+            ≤25% slower
           </span>
           <span className="tag has-background-warning has-text-dark">
-            Up to 2× slower
+            25–100% slower
           </span>
           <span className="tag has-background-danger has-text-light">
-            Over 2× slower
+            &gt;100% slower
           </span>
-          <span className="tag">🏆 Faster client</span>
+          <span className="tag">🏆 Fastest client</span>
         </div>
 
         {fetchedAt && (
@@ -77,6 +76,34 @@ const Home = ({
             Last benchmark error: {benchmarkError}
           </p>
         )}
+
+        <details className={styles.methodology}>
+          <summary>How this benchmark works</summary>
+          <div className={styles.methodologyContent}>
+            <p>
+              We regularly send the same types of requests to each client and
+              measure how long the answers take.
+            </p>
+            <ul>
+              <li>
+                We test one client at a time and send one request at a time.
+              </li>
+              <li>
+                Each client uses its own latest block and transaction. The
+                request types match, but the exact data may differ.
+              </li>
+              <li>
+                The table shows the average response time for the period named
+                above it.
+              </li>
+              <li>
+                Colors compare Forest and Lotus with Ethereum. Green means up
+                to 25% slower, yellow means 25–100% slower, and red means more
+                than 100% slower.
+              </li>
+            </ul>
+          </div>
+        </details>
 
         <p>
           Source code available on{" "}
@@ -106,10 +133,14 @@ const Home = ({
         </div>
       ) : (
         <BenchmarkSection
-          title={`Filecoin ETH RPC Benchmark — average over ${formatDuration(
-            collectionDurationMs
-          )}`}
-          rpcMethods={rpcMethods}
+          title="Filecoin ETH RPC Benchmark"
+          subtitle={
+            sampleCount === 1
+              ? "Based on the latest sample"
+              : `Average of ${sampleCount} samples collected over ${formatDuration(
+                  collectionWindowMs
+                )}`
+          }
           benchmarkData={benchmarkData}
         />
       )}
@@ -129,7 +160,7 @@ export const getServerSideProps = async () => {
       minSamples: snapshot.minSamples,
       benchmarkReady: snapshot.ready,
       intervalMs: snapshot.intervalMs,
-      collectionDurationMs: snapshot.collectionDurationMs,
+      collectionWindowMs: snapshot.collectionWindowMs,
       estimatedReadyAt: snapshot.firstSampleAt
         ? new Date(
             new Date(snapshot.firstSampleAt).getTime() +

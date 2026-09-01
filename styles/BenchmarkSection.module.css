@@ -4,7 +4,12 @@
 
 .title {
   margin-bottom: 2rem;
-  text-align: center;
+  text-align: left;
+}
+
+.subtitle {
+  margin: -1rem 0 2rem;
+  text-align: left;
 }
 
 .loading {
@@ -12,5 +17,3 @@
   font-size: 1.2rem;
   color: #666;
 }
-
-

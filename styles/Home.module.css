@@ -17,4 +17,31 @@
   line-height: 1.5;
 }
 
+.methodology {
+  border: 1px solid var(--bulma-border);
+  border-radius: 0.375rem;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+}
+
+.methodology summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.methodologyContent {
+  font-size: 1rem;
+  margin-top: 0.75rem;
+}
+
+.methodologyContent p,
+.methodologyContent ul {
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+}
 
