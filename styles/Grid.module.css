@@ -22,3 +22,7 @@
   max-width: 100px;
   word-wrap: break-word;
 }
+
+.methodName {
+  cursor: help;
+}

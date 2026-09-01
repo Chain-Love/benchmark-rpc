@@ -33,11 +33,10 @@ const Home = ({
   benchmarkError,
   sampleCount,
   minSamples,
-  maxSamples,
   benchmarkReady,
   intervalMs,
   collectionDurationMs,
-  collectionWindowMs,
+  estimatedReadyAt,
 }) => {
   return (
     <div className={styles.container}>
@@ -45,41 +44,30 @@ const Home = ({
 
       <div className="content">
         <p>
-          This application benchmarks various Ethereum JSON-RPC endpoints. It
-          performs multiple tasks such as fetching block numbers, block details,
-          transaction details, and more.
+          We send the same types of Ethereum JSON-RPC requests to Forest, Lotus,
+          and an Ethereum node used as a reference every{" "}
+          <strong>{formatDuration(intervalMs)}</strong>.
         </p>
 
-        <p>
-          Samples are collected every <strong>{formatDuration(intervalMs)}</strong>.
-          The cache keeps at most <strong>{maxSamples}</strong> samples. Yellow
-          cells indicate average response times greater than 200 ms, while red
-          cells indicate average response times greater than 500 ms.
-        </p>
-
-        {benchmarkReady && (
-          <>
-            <p>
-              The results are displayed as an average over the latest{" "}
-              <strong>{sampleCount}</strong> samples. The current average
-              represents approximately{" "}
-              <strong>{formatDuration(collectionDurationMs)}</strong> of
-              benchmark collection time.
-            </p>
-
-            {sampleCount > 1 && (
-              <p>
-                The retained sample window spans approximately{" "}
-                <strong>{formatDuration(collectionWindowMs)}</strong> between
-                the oldest and newest sample.
-              </p>
-            )}
-          </>
-        )}
+        <div className="tags are-medium" aria-label="Table legend">
+          <span className="tag has-background-light has-text-dark">
+            Reference value
+          </span>
+          <span className="tag has-background-success has-text-light">
+            No more than 25% slower
+          </span>
+          <span className="tag has-background-warning has-text-dark">
+            Up to 2× slower
+          </span>
+          <span className="tag has-background-danger has-text-light">
+            Over 2× slower
+          </span>
+          <span className="tag">🏆 Faster client</span>
+        </div>
 
         {fetchedAt && (
           <p>
-            Last server-side benchmark:{" "}
+            Last probe:{" "}
             <strong>{new Date(fetchedAt).toLocaleString()}</strong>
           </p>
         )}
@@ -106,14 +94,21 @@ const Home = ({
       {!benchmarkReady ? (
         <div className="notification is-info is-light">
           Waiting for <strong>{minSamples}</strong> samples to accumulate,
-          current number is <strong>{sampleCount}</strong>. Samples are
-          collected every <strong>{formatDuration(intervalMs)}</strong>; this
-          usually takes about{" "}
-          <strong>{formatDuration(minSamples * intervalMs)}</strong>.
+          current number is <strong>{sampleCount}</strong>.
+          {estimatedReadyAt ? (
+            <>
+              {" "}Expected to be ready by{" "}
+              <strong>{new Date(estimatedReadyAt).toLocaleString()}</strong>.
+            </>
+          ) : (
+            <> Collecting the first sample…</>
+          )}
         </div>
       ) : (
         <BenchmarkSection
-          title={`Filecoin ETH RPC Benchmark — average over ${sampleCount} samples`}
+          title={`Filecoin ETH RPC Benchmark — average over ${formatDuration(
+            collectionDurationMs
+          )}`}
           rpcMethods={rpcMethods}
           benchmarkData={benchmarkData}
         />
@@ -132,11 +127,15 @@ export const getServerSideProps = async () => {
       benchmarkError: snapshot.error,
       sampleCount: snapshot.sampleCount,
       minSamples: snapshot.minSamples,
-      maxSamples: snapshot.maxSamples,
       benchmarkReady: snapshot.ready,
       intervalMs: snapshot.intervalMs,
       collectionDurationMs: snapshot.collectionDurationMs,
-      collectionWindowMs: snapshot.collectionWindowMs,
+      estimatedReadyAt: snapshot.firstSampleAt
+        ? new Date(
+            new Date(snapshot.firstSampleAt).getTime() +
+              (snapshot.minSamples - 1) * snapshot.intervalMs
+          ).toISOString()
+        : null,
     },
   };
 };

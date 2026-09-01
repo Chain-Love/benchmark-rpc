@@ -2,22 +2,33 @@
 import styles from "../styles/Grid.module.css";
 
 const CLIENT_VERSION_METHOD = "web3_clientVersion";
+const REFERENCE_TITLE = "Ethereum";
 
 const Grid = ({ data }) => {
-  const getColorClass = (response) => {
-    if (response.error || response.method === CLIENT_VERSION_METHOD) {
+  const getColorClass = (rpc, response, referenceResponse) => {
+    if (rpc.rpcTitle === REFERENCE_TITLE) {
+      return "has-background-light has-text-dark";
+    }
+
+    if (
+      response.error ||
+      response.method === CLIENT_VERSION_METHOD ||
+      !referenceResponse ||
+      referenceResponse.error ||
+      referenceResponse.time <= 0
+    ) {
       return "";
     }
 
-    if (response.time > 500) {
-      return "has-background-danger has-text-light";
+    let colorClass = "has-background-success has-text-light";
+
+    if (response.time > referenceResponse.time * 2) {
+      colorClass = "has-background-danger has-text-light";
+    } else if (response.time > referenceResponse.time * 1.25) {
+      colorClass = "has-background-warning has-text-dark";
     }
 
-    if (response.time > 200) {
-      return "has-background-warning has-text-dark";
-    }
-
-    return "has-background-success has-text-light";
+    return colorClass;
   };
 
   const formatCellValue = (response) => {
@@ -33,12 +44,7 @@ const Grid = ({ data }) => {
       return response.result;
     }
 
-    const suffix =
-      response.errorCount > 0
-        ? ` (${response.errorCount}/${response.samples} failed)`
-        : "";
-
-    return `${response.time.toFixed(2)} ms${suffix}`;
+    return `${response.time.toFixed(2)} ms`;
   };
 
   const methods = data[0]?.responses.map((response) => response.method) ?? [];
@@ -57,27 +63,83 @@ const Grid = ({ data }) => {
         </thead>
 
         <tbody>
-          {methods.map((method) => (
-            <tr key={method}>
-              <td>{method}</td>
+          {methods.map((method) => {
+            const referenceResponse = data
+              .find((rpc) => rpc.rpcTitle === REFERENCE_TITLE)
+              ?.responses.find((response) => response.method === method);
+            const requestTooltip = data
+              .map((rpc) => {
+                const request = rpc.responses.find(
+                  (response) => response.method === method
+                )?.request;
 
-              {data.map((rpc) => {
-                const response = rpc.responses.find(
-                  (item) => item.method === method
-                );
+                return request
+                  ? `${rpc.rpcTitle}:\n${JSON.stringify(request, null, 2)}`
+                  : `${rpc.rpcTitle}: request not sent`;
+              })
+              .join("\n\n");
+            const clientTimes = data
+              .filter((rpc) => rpc.rpcTitle !== REFERENCE_TITLE)
+              .map((rpc) =>
+                rpc.responses.find((response) => response.method === method)
+              )
+              .filter(
+                (response) =>
+                  response &&
+                  !response.error &&
+                  response.method !== CLIENT_VERSION_METHOD
+              )
+              .map((response) => response.time);
+            const fastestClientTime =
+              clientTimes.length > 1 ? Math.min(...clientTimes) : null;
 
-                return (
-                  <td
-                    key={`${rpc.rpcUrl}-${method}`}
-                    className={response ? getColorClass(response) : ""}
-                    title={response?.errorMessage ?? ""}
-                  >
-                    {formatCellValue(response)}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+            return (
+              <tr key={method}>
+                <td className={styles.methodName} title={requestTooltip}>
+                  {method}
+                </td>
+
+                {data.map((rpc) => {
+                  const response = rpc.responses.find(
+                    (item) => item.method === method
+                  );
+                  const isFastestClient =
+                    rpc.rpcTitle !== REFERENCE_TITLE &&
+                    response &&
+                    !response.error &&
+                    response.method !== CLIENT_VERSION_METHOD &&
+                    response.time === fastestClientTime;
+
+                  return (
+                    <td
+                      key={`${rpc.rpcUrl}-${method}`}
+                      className={
+                        response
+                          ? getColorClass(
+                              rpc,
+                              response,
+                              referenceResponse
+                            )
+                          : ""
+                      }
+                      title={response?.error ? response.errorMessage : ""}
+                    >
+                      {formatCellValue(response)}
+                      {isFastestClient && (
+                        <span
+                          role="img"
+                          aria-label="Faster client"
+                          title="Faster client"
+                        >
+                          {" "}🏆
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
