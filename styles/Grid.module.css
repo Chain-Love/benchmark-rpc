@@ -92,6 +92,51 @@
   z-index: 3;
 }
 
+.sortButton {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.sortButton:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid var(--rpc-orange);
+  outline-offset: 0.2rem;
+}
+
+.sortIndicator {
+  color: var(--rpc-text-muted);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-left: 0.75rem;
+  min-width: 1rem;
+  text-align: center;
+}
+
+.sortIndicator span {
+  width: 0.5rem;
+}
+
+.activeSortIndicator span {
+  opacity: 0.25;
+}
+
+.activeSortIndicator .activeSortArrow {
+  color: var(--rpc-orange);
+  opacity: 1;
+}
+
 .controls {
   align-items: start;
   display: grid;

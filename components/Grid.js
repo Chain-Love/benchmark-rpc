@@ -25,12 +25,38 @@ const formatComparisonAmount = (time, comparisonTime) => {
   return percentage < 0.05 ? "<0.1%" : `${percentage.toFixed(1)}%`;
 };
 
+const SortIndicator = ({ active, direction }) => (
+  <span
+    className={`${styles.sortIndicator} ${
+      active ? styles.activeSortIndicator : ""
+    }`}
+    aria-hidden="true"
+  >
+    <span
+      className={
+        active && direction === "ascending" ? styles.activeSortArrow : ""
+      }
+    >
+      ↑
+    </span>
+    <span
+      className={
+        active && direction === "descending" ? styles.activeSortArrow : ""
+      }
+    >
+      ↓
+    </span>
+  </span>
+);
+
 const Grid = ({ data }) => {
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [copiedRequestKey, setCopiedRequestKey] = useState(null);
   const [copyErrorKey, setCopyErrorKey] = useState(null);
   const [methodQuery, setMethodQuery] = useState("");
   const [tableFilter, setTableFilter] = useState("all");
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState("ascending");
 
   useEffect(() => {
     const handleEscape = (event) => {
@@ -66,6 +92,22 @@ const Grid = ({ data }) => {
       setCopiedRequestKey(null);
       setCopyErrorKey(requestKey);
     }
+  };
+
+  const sortBy = (column) => {
+    if (sortColumn === column) {
+      if (sortDirection === "ascending") {
+        setSortDirection("descending");
+      } else {
+        setSortColumn(null);
+        setSortDirection("ascending");
+      }
+
+      return;
+    }
+
+    setSortColumn(column);
+    setSortDirection("ascending");
   };
 
   const getColorClass = (rpc, response, referenceResponse) => {
@@ -157,6 +199,37 @@ const Grid = ({ data }) => {
 
     return true;
   });
+
+  if (sortColumn) {
+    const sortRpc = data.find((rpc) => rpc.rpcUrl === sortColumn);
+
+    methods.sort((firstMethod, secondMethod) => {
+      if (!sortRpc) {
+        const comparison = firstMethod.localeCompare(secondMethod);
+        return sortDirection === "ascending" ? comparison : -comparison;
+      }
+
+      const firstResponse = getResponse(sortRpc, firstMethod);
+      const secondResponse = getResponse(sortRpc, secondMethod);
+      const firstUnavailable = !firstResponse || firstResponse.error;
+      const secondUnavailable = !secondResponse || secondResponse.error;
+
+      if (firstUnavailable !== secondUnavailable) {
+        return firstUnavailable ? 1 : -1;
+      }
+
+      if (firstUnavailable) {
+        return firstMethod.localeCompare(secondMethod);
+      }
+
+      const comparison =
+        firstResponse.time === secondResponse.time
+          ? firstMethod.localeCompare(secondMethod)
+          : firstResponse.time - secondResponse.time;
+
+      return sortDirection === "ascending" ? comparison : -comparison;
+    });
+  }
 
   const filecoinClients = data.filter(
     (rpc) => rpc.rpcTitle !== REFERENCE_TITLE
@@ -290,23 +363,55 @@ const Grid = ({ data }) => {
           </caption>
           <thead>
             <tr>
-              <th scope="col">
-                <span className={styles.columnTitle}>Method</span>
+              <th
+                scope="col"
+                aria-sort={
+                  sortColumn === "method" ? sortDirection : "none"
+                }
+              >
+                <button
+                  type="button"
+                  className={styles.sortButton}
+                  onClick={() => sortBy("method")}
+                >
+                  <span className={styles.columnTitle}>Method</span>
+                  <SortIndicator
+                    active={sortColumn === "method"}
+                    direction={sortDirection}
+                  />
+                </button>
               </th>
               {data.map((rpc) => (
                 <th
                   key={rpc.rpcUrl}
                   scope="col"
+                  aria-sort={
+                    sortColumn === rpc.rpcUrl ? sortDirection : "none"
+                  }
                   className={
                     rpc.rpcTitle === REFERENCE_TITLE
                       ? styles.referenceHeader
                       : undefined
                   }
                 >
-                  <span className={styles.columnTitle}>{rpc.rpcTitle}</span>
-                  {rpc.rpcTitle === REFERENCE_TITLE && (
-                    <span className={styles.columnNote}>Reference value</span>
-                  )}
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => sortBy(rpc.rpcUrl)}
+                  >
+                    <span>
+                      <span className={styles.columnTitle}>{rpc.rpcTitle}</span>
+                      {rpc.rpcTitle === REFERENCE_TITLE && (
+                        <span className={styles.columnNote}>
+                          Reference value
+                        </span>
+                      )}
+                    </span>
+                    <SortIndicator
+                      active={sortColumn === rpc.rpcUrl}
+                      direction={sortDirection}
+                    />
+                  </button>
                 </th>
               ))}
             </tr>
