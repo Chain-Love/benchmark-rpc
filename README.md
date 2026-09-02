@@ -14,4 +14,8 @@ npm install
 npm run dev
 ```
 
+## Configuration
+
+Set `BENCHMARK_WORKERS` to control the maximum number of concurrent RPC
+requests. It must be a positive integer and defaults to `4`.
 

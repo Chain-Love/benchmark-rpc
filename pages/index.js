@@ -34,6 +34,7 @@ const Home = ({
   minSamples,
   benchmarkReady,
   intervalMs,
+  workerCount,
   collectionWindowMs,
   estimatedReadyAt,
 }) => {
@@ -96,7 +97,9 @@ const Home = ({
               same types of Ethereum JSON-RPC requests to Forest, Lotus, and an
               Ethereum node used as a reference.
             </li>
-            <li>We test one client and one request at a time.</li>
+            <li>
+              We run up to <strong>{workerCount}</strong> requests in parallel.
+            </li>
             <li>
               Each client uses its own latest block and transaction, so the
               exact data may differ.
@@ -135,6 +138,7 @@ export const getServerSideProps = async () => {
       minSamples: snapshot.minSamples,
       benchmarkReady: snapshot.ready,
       intervalMs: snapshot.intervalMs,
+      workerCount: snapshot.workerCount,
       collectionWindowMs: snapshot.collectionWindowMs,
       estimatedReadyAt: snapshot.firstSampleAt
         ? new Date(
