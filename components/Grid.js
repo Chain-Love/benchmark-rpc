@@ -3,6 +3,7 @@ import styles from "../styles/Grid.module.css";
 
 const CLIENT_VERSION_METHOD = "web3_clientVersion";
 const REFERENCE_TITLE = "Ethereum";
+const COMPARISON_RATIO_THRESHOLD = 1.5;
 
 const getResponse = (rpc, method) =>
   rpc?.responses.find((response) => response.method === method);
@@ -92,6 +93,19 @@ const Grid = ({ data }) => {
 
     if (percentage === 0) {
       return `Same as ${comparisonTitle}`;
+    }
+
+    const comparisonRatio =
+      percentage > 0
+        ? response.time / comparisonResponse.time
+        : comparisonResponse.time / response.time;
+
+    if (comparisonRatio >= COMPARISON_RATIO_THRESHOLD) {
+      return `${comparisonRatio.toLocaleString("en-US", {
+        maximumFractionDigits: 1,
+      })} times ${
+        percentage > 0 ? "slower" : "faster"
+      } than ${comparisonTitle}`;
     }
 
     const amount =
