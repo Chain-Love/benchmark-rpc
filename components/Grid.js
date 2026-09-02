@@ -8,6 +8,23 @@ const COMPARISON_RATIO_THRESHOLD = 1.5;
 const getResponse = (rpc, method) =>
   rpc?.responses.find((response) => response.method === method);
 
+const formatComparisonAmount = (time, comparisonTime) => {
+  const comparisonRatio =
+    time > comparisonTime ? time / comparisonTime : comparisonTime / time;
+
+  if (comparisonRatio >= COMPARISON_RATIO_THRESHOLD) {
+    return `${comparisonRatio.toLocaleString("en-US", {
+      maximumFractionDigits: 1,
+    })} times`;
+  }
+
+  const percentage = Math.abs(
+    ((time - comparisonTime) / comparisonTime) * 100
+  );
+
+  return percentage < 0.05 ? "<0.1%" : `${percentage.toFixed(1)}%`;
+};
+
 const Grid = ({ data }) => {
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [copiedRequestKey, setCopiedRequestKey] = useState(null);
@@ -95,23 +112,10 @@ const Grid = ({ data }) => {
       return `Same as ${comparisonTitle}`;
     }
 
-    const comparisonRatio =
-      percentage > 0
-        ? response.time / comparisonResponse.time
-        : comparisonResponse.time / response.time;
-
-    if (comparisonRatio >= COMPARISON_RATIO_THRESHOLD) {
-      return `${comparisonRatio.toLocaleString("en-US", {
-        maximumFractionDigits: 1,
-      })} times ${
-        percentage > 0 ? "slower" : "faster"
-      } than ${comparisonTitle}`;
-    }
-
-    const amount =
-      Math.abs(percentage) < 0.05
-        ? "<0.1%"
-        : `${Math.abs(percentage).toFixed(1)}%`;
+    const amount = formatComparisonAmount(
+      response.time,
+      comparisonResponse.time
+    );
 
     return `${amount} ${
       percentage > 0 ? "slower" : "faster"
@@ -318,12 +322,26 @@ const Grid = ({ data }) => {
                   response: getResponse(rpc, method),
                 }))
                 .filter(({ response }) => response && !response.error);
+              const sortedClientTimes = filecoinResults
+                .map(({ response }) => response.time)
+                .sort((first, second) => first - second);
               const fastestClientTime =
-                filecoinResults.length > 1
-                  ? Math.min(
-                      ...filecoinResults.map(({ response }) => response.time)
-                    )
+                sortedClientTimes.length > 1 &&
+                sortedClientTimes[0] < sortedClientTimes[1]
+                  ? sortedClientTimes[0]
                   : null;
+              const winningDescription =
+                fastestClientTime === null
+                  ? null
+                  : `Won by ${(
+                      sortedClientTimes[1] - fastestClientTime
+                    ).toLocaleString("en-US", {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })} ms (${formatComparisonAmount(
+                      fastestClientTime,
+                      sortedClientTimes[1]
+                    )})`;
               let clientComparison = null;
 
               if (filecoinResults.length === 2) {
@@ -434,8 +452,8 @@ const Grid = ({ data }) => {
                             {isFastestClient && (
                               <span
                                 role="img"
-                                aria-label="Fastest Filecoin client"
-                                title="Fastest Filecoin client"
+                                aria-label={winningDescription}
+                                title={winningDescription}
                               >
                                 {" "}🏆
                               </span>
